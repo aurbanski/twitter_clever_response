@@ -1,3 +1,10 @@
 .color {
   background-color: red;
 }
+
+@media (min-width: 600px) {
+  .color{
+    background-color: blue;
+  }
+
+}

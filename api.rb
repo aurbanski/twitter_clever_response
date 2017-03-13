@@ -20,11 +20,27 @@ access_token = OAuth::Token.new(
     "377135231-JLlSJoXq1gCr655ccLidWMQRuIgMobFEVaOnEymP",
     "g8FvyFgsJqGQIYokixrOFbtzEsOixqZ5Ul3bm2wC1a5Fx")
 
+#Set up the base url for the twitter api
 baseurl = "https://api.twitter.com"
+
+#Set up the request for the direst messages
 path = '/1.1/direct_messages.json'
-query   = URI.encode_www_form("count" => "5")
-address = URI("#{baseurl}#{path}?#{query}")
+address = URI("#{baseurl}#{path}")
 request = Net::HTTP::Get.new address.request_uri
+
+#Set up the request for the sent direct messages
+path2 = '/1.1/direct_messages/sent.json'
+address2 = URI("#{baseurl}#{path2}")
+request2 = Net::HTTP::Get.new address2.request_uri
+
+
+http2 = Net::HTTP.new address2.host, address2.port
+http2.use_ssl = true
+http2.verify_mode = OpenSSL::SSL::VERIFY_PEER
+
+request2.oauth! http2, consumer_key, access_token
+http2.start
+response2 = http2.request request2
 
 http = Net::HTTP.new address.host, address.port
 http.use_ssl = true
@@ -40,15 +56,17 @@ end
 
 messages = nil
 if response.code == '200'
-  puts response.body
+  #puts response.body
   puts ''
   puts ''
   messages = JSON.parse(response.body)
+  messages_sent = JSON.parse(response2.body)
   puts ''
   puts JSON.pretty_generate(messages)
   puts ''
-  puts messages
+  #puts messages
   puts ''
+  puts JSON.pretty_generate(messages_sent)
   puts messages[0]['sender']['id']
 end
 
@@ -56,6 +74,7 @@ if messages[0]['sender']['id'] != 377135231
   puts ''
   puts ''
   puts comment = bot.say(messages[0]['sender']['text'])
+  puts comment = bot.say(messages[1]['sender']['text'])
   puts ''
   puts comment
 
